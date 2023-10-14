@@ -19,4 +19,9 @@ public class UserUtil {
         return userRepository.findById(authentication.getName())
                 .orElseThrow(()-> new UserNotExist("login user not exist", ErrorCode.USER_NOT_EXIST));
     }
+
+    public User getUserById(String userId){
+        return userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotExist("login user not exist", ErrorCode.USER_NOT_EXIST));
+    }
 }

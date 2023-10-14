@@ -3,10 +3,13 @@ package com.example.soonsul.liquor.controller;
 import com.example.soonsul.liquor.dto.EvaluationDto;
 import com.example.soonsul.liquor.dto.EvaluationRequest;
 import com.example.soonsul.liquor.dto.PersonEvaluationDto;
+import com.example.soonsul.liquor.dto.PersonalDto;
 import com.example.soonsul.liquor.response.EvaluationResponse;
 import com.example.soonsul.liquor.response.PersonEvaluationResponse;
+import com.example.soonsul.liquor.response.PersonalResponse;
 import com.example.soonsul.liquor.service.EvaluationService;
 import com.example.soonsul.liquor.service.LiquorService;
+import com.example.soonsul.liquor.service.PersonalService;
 import com.example.soonsul.response.result.ResultCode;
 import com.example.soonsul.response.result.ResultResponse;
 import io.swagger.annotations.Api;
@@ -15,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Api(tags="Evaluation")
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class EvaluationController {
     private final LiquorService liquorService;
     private final EvaluationService evaluationService;
+    private final PersonalService personalService;
 
 
     @ApiOperation(value = "전통주 평가 여부 - 평점에 대한 평가 여부도 됨")
@@ -71,4 +77,11 @@ public class EvaluationController {
         return ResponseEntity.ok(ResultResponse.of(ResultCode.PUT_EVALUATION_SUCCESS));
     }
 
+
+    @ApiOperation(value = "유저가 남긴 평가 내용들 조회 (평점, 맛평점, 리뷰 내용)")
+    @GetMapping("/{liquorId}/evaluation")
+    public ResponseEntity<PersonalResponse> getEvaluation(@PathVariable("liquorId") String liquorId) {
+        final PersonalDto data= personalService.getEvaluation(liquorId);
+        return ResponseEntity.ok(PersonalResponse.of(ResultCode.GET_EVALUATION_SUCCESS, data));
+    }
 }

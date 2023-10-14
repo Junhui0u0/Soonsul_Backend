@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.PlatformTransactionManager;
 
 
 import java.util.Optional;
@@ -43,6 +44,8 @@ public class EvaluationServiceTest {
     @Mock
     private ReviewRepository reviewRepository;
 
+    @Mock
+    private PlatformTransactionManager transactionManager;
 
     private final User user= user();
 
@@ -186,7 +189,7 @@ public class EvaluationServiceTest {
             void 수정할값이_이전이랑_다른_경우(){
                 //given
                 pe.updateLiquorPersonalRating(3.0);
-                number.addAverageRating(1);
+                number.addAverageRating(CalculationType.ADD);
                 request.setLiquorPersonalRating(4.0);
 
                 //when

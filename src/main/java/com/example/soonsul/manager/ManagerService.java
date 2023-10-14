@@ -10,7 +10,18 @@ import com.example.soonsul.liquor.repository.EvaluationRepository;
 import com.example.soonsul.liquor.repository.LiquorRepository;
 import com.example.soonsul.liquor.repository.LocationInfoRepository;
 import com.example.soonsul.manager.dto.LocationRes;
+import com.example.soonsul.notification.NotificationRepository;
+import com.example.soonsul.notification.NotificationService;
+import com.example.soonsul.notification.dto.PushNotification;
+import com.example.soonsul.notification.entity.NotificationType;
+import com.example.soonsul.promotion.PromotionRepository;
+import com.example.soonsul.promotion.entity.Promotion;
+import com.example.soonsul.promotion.exception.PromotionNotExist;
+import com.example.soonsul.response.error.ErrorCode;
+import com.example.soonsul.user.entity.User;
+import com.example.soonsul.user.repository.UserRepository;
 import com.example.soonsul.util.LiquorUtil;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -19,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +43,10 @@ public class ManagerService {
     private final EvaluationRepository evaluationRepository;
     private final EvaluationNumberRepository numberRepository;
     private final LocationInfoRepository locationInfoRepository;
+    private final PromotionRepository promotionRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
     @Value("${map.kakao.apiKey}")
     private String apiKey;
@@ -46,9 +62,19 @@ public class ManagerService {
         for (MultipartFile image : images) {
             final String liquorId = image.getOriginalFilename().substring(0, 8);
             final Liquor liquor = liquorUtil.getLiquor(liquorId);
-            if (!liquor.getImageUrl().equals("") || liquor.getImageUrl() != null)
-                s3Uploader.deleteFile(liquor.getImageUrl());
+            //if (liquor.getImageUrl() != null || !liquor.getImageUrl().equals(""))
+            //    s3Uploader.deleteFile(liquor.getImageUrl());
             liquor.updateImageUrl(s3Uploader.liquorMainUpload(image));
+        }
+    }
+
+
+    @Transactional
+    public void postDefaultPhoto() {
+        final List<Liquor> list= liquorRepository.findAll();
+        for(Liquor liquor: list){
+            if(liquor.getImageUrl()!=null) continue;
+            liquor.updateImageUrl("https://cdn.discordapp.com/attachments/1103554508484792390/1154012305667928074/IMG_2787.png");
         }
     }
 
@@ -105,4 +131,39 @@ public class ManagerService {
         }
     }
 
+
+    @Transactional
+    public void postPromotion(MultipartFile image, MultipartFile content, String title,
+                              String location, LocalDate beginDate, LocalDate endDate) throws FirebaseMessagingException {
+        final Promotion promotion= Promotion.builder()
+                .image(s3Uploader.promotionUpload(image,"thumbnail"))
+                .content(s3Uploader.promotionUpload(content,"content"))
+                .title(title)
+                .location(location)
+                .beginDate(beginDate)
+                .endDate(endDate)
+                .build();
+        final Long promotionId= promotionRepository.save(promotion).getPromotionId();
+
+        final List<User> userList= userRepository.findAll();
+        for(User user: userList){
+            if(!user.isFlagAdvertising()) continue;
+            final PushNotification pushNotification= PushNotification.builder()
+                    .objectId(promotionId)
+                    .receiveUser(user)
+                    .build();
+            notificationService.sendNotification(NotificationType.PROMOTION, pushNotification);
+        }
+    }
+
+
+    @Transactional
+    public void deletePromotion(Long promotionId) {
+        final Promotion promotion= promotionRepository.findById(promotionId)
+                .orElseThrow(()-> new PromotionNotExist("promotion not exist", ErrorCode.PROMOTION_NOT_EXIST));
+        s3Uploader.deleteFile(promotion.getImage());
+        s3Uploader.deleteFile(promotion.getContent());
+        promotionRepository.deleteById(promotionId);
+        notificationRepository.deleteByTypeAndObjectId(NotificationType.PROMOTION, promotionId);
+    }
 }

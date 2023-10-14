@@ -5,6 +5,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -37,6 +39,8 @@ public class Comment {
     @Column(name = "upper_comment_id")
     private Long upperCommentId;
 
+    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private final List<CommentGood> commentGoods = new ArrayList<>();
 
     public void updateContent(String content){
         this.content= content;

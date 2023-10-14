@@ -4,6 +4,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -35,4 +37,7 @@ public class Promotion {
 
     @Column(name = "image")
     private String image;
+
+    @OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private final List<Zzim> zzimList = new ArrayList<>();
 }

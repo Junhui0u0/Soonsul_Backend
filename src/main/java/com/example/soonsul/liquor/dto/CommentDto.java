@@ -45,11 +45,14 @@ public class CommentDto {
     @ApiModelProperty(value = "대댓글 정보 (최대2개)", position = 9)
     private List<ReCommentDto> reCommentList;
 
-    @ApiModelProperty(value = "댓글 작성자가 본인인지에 대한 여부", position = 10)
+    @ApiModelProperty(value = "대댓글 개수", position = 10)
+    private Integer reCommentNumber;
+
+    @ApiModelProperty(value = "댓글 작성자가 본인인지에 대한 여부", position = 11)
     private boolean flagMySelf;
 
 
-    @ApiModelProperty(value = "좋아요 유무", position = 11)
+    @ApiModelProperty(value = "좋아요 유무", position = 12)
     private boolean flagGood;
 
 }

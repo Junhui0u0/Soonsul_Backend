@@ -1,5 +1,8 @@
 package com.example.soonsul.promotion;
 
+import com.example.soonsul.main.entity.MainBanner;
+import com.example.soonsul.main.repository.BannerZzimRepository;
+import com.example.soonsul.main.repository.MainBannerRepository;
 import com.example.soonsul.promotion.dto.PromotionDto;
 import com.example.soonsul.promotion.entity.Promotion;
 import com.example.soonsul.promotion.entity.Zzim;
@@ -18,19 +21,21 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PromotionService {
+    private final UserUtil userUtil;
     private final PromotionRepository promotionRepository;
     private final ZzimRepository zzimRepository;
-    private final UserUtil userUtil;
+    private final MainBannerRepository mainBannerRepository;
+    private final BannerZzimRepository bannerZzimRepository;
 
 
     @Transactional(readOnly = true)
-    public List<PromotionDto> getPromotionList(){
+    public List<PromotionDto> getPromotionList(String category){
         final User user= userUtil.getUserByAuthentication();
         final List<Promotion> list= promotionRepository.findAll();
 
         final List<PromotionDto> result= new ArrayList<>();
         for(Promotion p: list){
-            if(LocalDate.now().isAfter(p.getEndDate())) continue;
+            if(p.getEndDate()!=null && LocalDate.now().isAfter(p.getEndDate())) continue;
             final PromotionDto dto= PromotionDto.builder()
                     .promotionId(p.getPromotionId())
                     .title(p.getTitle())
@@ -40,6 +45,19 @@ public class PromotionService {
                     .location(p.getLocation())
                     .image(p.getImage())
                     .flagZzim(zzimRepository.existsByUserAndPromotion(user, p))
+                    .build();
+            result.add(dto);
+        }
+        if(category.equals("promotion")) return result;
+
+        final List<MainBanner> bannerList= mainBannerRepository.findAll();
+        for(MainBanner banner: bannerList){
+            final PromotionDto dto= PromotionDto.builder()
+                    .mainBannerId(banner.getMainBannerId())
+                    .bannerContent(banner.getContent())
+                    .bannerThumbnail(banner.getThumbnail())
+                    .bannerName(banner.getTitle())
+                    .flagZzim(bannerZzimRepository.existsByUserAndMainBanner(user, banner))
                     .build();
             result.add(dto);
         }

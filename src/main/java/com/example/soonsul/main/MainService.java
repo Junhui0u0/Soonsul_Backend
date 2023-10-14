@@ -5,7 +5,7 @@ import com.example.soonsul.liquor.entity.RegionClick;
 import com.example.soonsul.liquor.repository.*;
 import com.example.soonsul.main.dto.RegionLiquorDto;
 import com.example.soonsul.main.dto.WeekLiquorDto;
-import com.example.soonsul.main.entity.Sort;
+import com.example.soonsul.main.entity.Sorting;
 import com.example.soonsul.user.entity.User;
 import com.example.soonsul.util.LiquorUtil;
 import com.example.soonsul.util.UserUtil;
@@ -31,25 +31,33 @@ public class MainService {
 
     @Transactional(readOnly = true)
     public List<WeekLiquorDto> getWeekLiquor(){
-        final PriorityQueue<Pair> pq = new PriorityQueue<>();
+        HashMap<String, Integer> map = new HashMap<>();
+
         final List<Liquor> liquorList= liquorRepository.findAll();
         for(Liquor l: liquorList){
-            pq.add(Pair.of(clickRepository.findAllByLiquorId(l.getLiquorId()).size(), l.getLiquorId()));
+            map.put(l.getLiquorId(), clickRepository.findAllByLiquorId(l.getLiquorId()).size());
         }
 
-        final List<String> tenLiquor= new ArrayList<>();
-        int ten= 10;
-        while(ten>0){
-            tenLiquor.add((String) pq.peek().getSecond());
-            pq.remove();
-            ten--;
-        }
+        map= map.entrySet()
+                .stream()
+                .filter(m -> m.getValue() > 0)
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(10)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
 
         final List<WeekLiquorDto> result= new ArrayList<>();
-        for(String s: tenLiquor){
+        for(String key : map.keySet()){
+            final Liquor liquor= liquorUtil.getLiquor(key);
             final WeekLiquorDto dto= WeekLiquorDto.builder()
-                    .liquorId(s)
-                    .imageUrl(liquorRepository.findById(s).get().getImageUrl())
+                    .liquorId(key)
+                    .imageUrl(liquor.getImageUrl())
+                    .name(liquor.getName())
+                    .averageRating(liquor.getAverageRating())
                     .build();
             result.add(dto);
         }
@@ -59,7 +67,7 @@ public class MainService {
 
 
     @Transactional(readOnly = true)
-    public List<RegionLiquorDto> getRegionLiquor(String region, Sort sorting, Double latitude, Double longitude){
+    public List<RegionLiquorDto> getRegionLiquor(String region, Sorting sorting, Double latitude, Double longitude){
         final List<RegionLiquorDto> result= new ArrayList<>();
         final List<String> codeList= new ArrayList<>();
         switch (region) {
@@ -100,7 +108,7 @@ public class MainService {
 
 
     //내주변
-    private List<RegionLiquorDto> aroundMeLiquor(Sort sorting, Double latitude, Double longitude){
+    private List<RegionLiquorDto> aroundMeLiquor(Sorting sorting, Double latitude, Double longitude){
         final User user= userUtil.getUserByAuthentication();
 
         final List<RegionClick> clickList= (List<RegionClick>) regionClickRepository.findAll();
@@ -112,7 +120,7 @@ public class MainService {
 
 
     //지역
-    private List<RegionLiquorDto> regionLiquor(Sort sorting, List<String> codeList){
+    private List<RegionLiquorDto> regionLiquor(Sorting sorting, List<String> codeList){
         final User user= userUtil.getUserByAuthentication();
 
         final List<RegionClick> clickList= new ArrayList<>();
@@ -190,7 +198,7 @@ public class MainService {
     }
 
 
-    public List<RegionLiquorDto> sortByCategory(Sort sorting, List<RegionLiquorDto> list){
+    public List<RegionLiquorDto> sortByCategory(Sorting sorting, List<RegionLiquorDto> list){
         switch (sorting) {
             case STAR:
                 return byStar(list);
@@ -243,15 +251,35 @@ public class MainService {
     }
 
     private List<RegionLiquorDto> byLowestCost(List<RegionLiquorDto> list){
-        return list.stream()
+        final List<RegionLiquorDto> noPriceLiquors= new ArrayList<>();
+        for(RegionLiquorDto dto: list){
+            if(dto.getLowestPrice()==null) noPriceLiquors.add(dto);
+        }
+
+        final List<RegionLiquorDto> sortedLiquors= list.stream()
+                .filter(dto -> dto.getLowestPrice()!= null)
                 .sorted(Comparator.comparing(RegionLiquorDto::getLowestPrice))
                 .collect(Collectors.toList());
+
+        sortedLiquors.addAll(noPriceLiquors);
+
+        return sortedLiquors;
     }
 
     private List<RegionLiquorDto> byHighestCost(List<RegionLiquorDto> list){
-        return list.stream()
+        final List<RegionLiquorDto> noPriceLiquors= new ArrayList<>();
+        for(RegionLiquorDto dto: list){
+            if(dto.getLowestPrice()==null) noPriceLiquors.add(dto);
+        }
+
+        final List<RegionLiquorDto> sortedLiquors= list.stream()
+                .filter(dto -> dto.getLowestPrice()!= null)
                 .sorted(Comparator.comparing(RegionLiquorDto::getLowestPrice).reversed())
                 .collect(Collectors.toList());
+
+        sortedLiquors.addAll(noPriceLiquors);
+
+        return sortedLiquors;
     }
 
 }

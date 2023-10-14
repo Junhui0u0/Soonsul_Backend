@@ -2,17 +2,18 @@ package com.example.soonsul.manager;
 
 import com.example.soonsul.response.result.ResultCode;
 import com.example.soonsul.response.result.ResultResponse;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Api(tags="관리자")
@@ -21,12 +22,20 @@ import java.util.List;
 @RequestMapping("/manager")
 public class ManagerController {
     private final ManagerService managerService;
+    private final GoogleSheetsService googleSheetsService;
 
 
     @ApiOperation(value = "모든 전통주 메인사진 s3에 등록")
     @PostMapping(value = "/liquor/main-photo", produces = MediaType.APPLICATION_JSON_VALUE, consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ResultResponse> postMainPhoto(@RequestPart("images") List<MultipartFile> images) {
         managerService.postMainPhoto(images);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_MAIN_PHOTO));
+    }
+
+    @ApiOperation(value = "모든 전통주 기본사진 s3에 등록")
+    @PostMapping(value = "/liquor/default-photo")
+    public ResponseEntity<ResultResponse> postDefaultPhoto() {
+        managerService.postDefaultPhoto();
         return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_MAIN_PHOTO));
     }
 
@@ -46,4 +55,49 @@ public class ManagerController {
         return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_LOCATION_INIT_SUCCESS));
     }
 
+
+    @ApiOperation(value = "전통주 저장")
+    @PostMapping("/liquors")
+    public ResponseEntity<ResultResponse> postLiquor(String spreadsheetId, String range) throws IOException {
+        googleSheetsService.postLiquor(spreadsheetId, range);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS));
+    }
+
+
+    @ApiOperation(value = "소재지 주소 체크", notes = "소재지가 잘못 저장된 전통주를 리스트로 반환")
+    @GetMapping("/location/check")
+    public ResponseEntity<ResultResponse> getLocationCheck(String spreadsheetId, String range) throws IOException {
+        List<String> data= googleSheetsService.getLocationCheck(spreadsheetId, range);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS, data));
+    }
+
+    @ApiOperation(value = "지역코드 체크", notes = "지역코드가 잘못 저장된 전통주를 리스트로 반환")
+    @GetMapping("/region-code/check")
+    public ResponseEntity<ResultResponse> getRegionCodeCheck(String spreadsheetId, String range) throws IOException {
+        List<String> data= googleSheetsService.getRegionCodeCheck(spreadsheetId, range);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS, data));
+    }
+
+    @ApiOperation(value = "액세스토큰 조회")
+    @GetMapping("/token/{userId}")
+    public ResponseEntity<ResultResponse> getToken(@PathVariable("userId") String userId) throws IOException {
+        String data= googleSheetsService.getToken(userId);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS, data));
+    }
+
+    @ApiOperation(value = "프로모션 저장")
+    @PostMapping(value = "/promotion", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResultResponse> postPromotion(@RequestPart(value = "thumbnail", required = false) MultipartFile image, @RequestPart(value = "content", required = false) MultipartFile content,
+                                                        @RequestPart(value = "title", required = false) String title, @RequestPart(value = "location", required = false) String location,
+                                                        @RequestParam(value = "beginDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beginDate, @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) throws FirebaseMessagingException {
+        managerService.postPromotion(image, content, title, location, beginDate, endDate);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS));
+    }
+
+    @ApiOperation(value = "프로모션 삭제")
+    @DeleteMapping(value = "/promotion/{promotionId}")
+    public ResponseEntity<ResultResponse> deletePromotion(@PathVariable("promotionId") Long promotionId) {
+        managerService.deletePromotion(promotionId);
+        return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS));
+    }
 }

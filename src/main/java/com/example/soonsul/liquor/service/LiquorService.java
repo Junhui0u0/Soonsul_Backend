@@ -1,8 +1,10 @@
 package com.example.soonsul.liquor.service;
 
+import com.example.soonsul.cache.CacheKey;
 import com.example.soonsul.liquor.dto.*;
 import com.example.soonsul.liquor.entity.*;
 import com.example.soonsul.liquor.repository.*;
+import com.example.soonsul.main.entity.Sorting;
 import com.example.soonsul.user.entity.PersonalEvaluation;
 import com.example.soonsul.user.entity.User;
 import com.example.soonsul.user.repository.PersonalEvaluationRepository;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -34,6 +37,7 @@ public class LiquorService {
 
 
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheKey.LIQUOR, cacheManager = "cacheManager")
     public LiquorInfoDto getLiquorInfo(String liquorId){
         final User user= userUtil.getUserByAuthentication();
         final Liquor liquor= liquorUtil.getLiquor(liquorId);
@@ -200,6 +204,12 @@ public class LiquorService {
     }
 
 
+    @Transactional(readOnly = true)
+    public List<String> getLiquorListId(){
+        return liquorRepository.findAllId();
+    }
+
+
     @Transactional
     public void updateFiltering(){
         final List<Integer> age= Arrays.asList(20, 30, 40, 50, 60);
@@ -260,43 +270,46 @@ public class LiquorService {
 
 
     @Transactional(readOnly = true)
-    public List<LiquorInfoDto> getScrapList(Pageable pageable, String sorting){
+    public List<LiquorInfoDto> getScrapList(Pageable pageable, Sorting sorting){
         final User user= userUtil.getUserByAuthentication();
-        final List<Liquor> list= liquorRepository.findAll(pageable).toList();
+
+        List<Scrap> list= new ArrayList<>();
+        switch (sorting) {
+            case DATE:
+                list= scrapRepository.findByDate(pageable, user.getUserId()).toList();
+                break;
+            case STAR:
+                list= scrapRepository.findByStar(pageable, user.getUserId()).toList();
+                break;
+            case LOWEST_COST:
+                list= scrapRepository.findByLowestCost(pageable, user.getUserId()).toList();
+                break;
+            case HIGHEST_COST:
+                list= scrapRepository.findByHighestCost(pageable, user.getUserId()).toList();
+                break;
+        }
 
         final List<LiquorInfoDto> result= new ArrayList<>();
-        for(Liquor l: list){
-            final Optional<Scrap> scrap= scrapRepository.findByUserAndLiquor(user,l);
-            if(scrap.isEmpty()) continue;
-
-            final String liquorCategory= liquorUtil.getCodeName(l.getLiquorCategory());
+        final Integer totalScrapNumber= scrapRepository.countByUser(user);
+        for(Scrap s: list){
+            final Liquor liquor= s.getLiquor();
+            final String liquorCategory= liquorUtil.getCodeName(liquor.getLiquorCategory());
 
             final LiquorInfoDto dto= LiquorInfoDto.builder()
-                    .liquorId(l.getLiquorId())
-                    .name(l.getName())
-                    .averageRating(l.getAverageRating())
-                    .lowestPrice(l.getLowestPrice())
-                    .imageUrl(l.getImageUrl())
+                    .liquorId(liquor.getLiquorId())
+                    .name(liquor.getName())
+                    .averageRating(liquor.getAverageRating())
+                    .lowestPrice(liquor.getLowestPrice())
+                    .imageUrl(liquor.getImageUrl())
                     .liquorCategory(liquorCategory)
-                    .ratingNumber(reviewRepository.countByLiquor(l))
+                    .ratingNumber(reviewRepository.countByLiquor(liquor))
                     .flagScrap(true)
-                    .scrapDate(scrap.get().getScrapDate())
+                    .scrapDate(s.getScrapDate())
+                    .totalScrapNumber(totalScrapNumber)
                     .build();
             result.add(dto);
         }
-
-        switch (sorting) {
-            case "date":
-                return byDate(result);
-            case "star":
-                return byStar(result);
-            case "lowest-cost":
-                return byLowestCost(result);
-            case "highest-cost":
-                return byHighestCost(result);
-            default:
-                return result;
-        }
+        return result;
     }
 
 

@@ -7,8 +7,12 @@ import com.example.soonsul.liquor.response.ReviewListResponse;
 import com.example.soonsul.liquor.response.ReviewResponse;
 import com.example.soonsul.liquor.service.CommentService;
 import com.example.soonsul.liquor.service.ReviewService;
+import com.example.soonsul.notification.NotificationService;
+import com.example.soonsul.notification.dto.PushNotification;
+import com.example.soonsul.notification.entity.NotificationType;
 import com.example.soonsul.response.result.ResultCode;
 import com.example.soonsul.response.result.ResultResponse;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,7 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
     private final CommentService commentService;
+    private final NotificationService notificationService;
 
 
     @ApiOperation(value = "전통주 리뷰 전체 조회 - 최신순")
@@ -63,8 +68,9 @@ public class ReviewController {
 
     @ApiOperation(value = "리뷰 좋아요 추가")
     @PostMapping("/reviews/{reviewId}/like")
-    public ResponseEntity<ResultResponse> postReviewLike(@PathVariable("reviewId") Long reviewId) {
-        reviewService.postReviewLike(reviewId);
+    public ResponseEntity<ResultResponse> postReviewLike(@PathVariable("reviewId") Long reviewId) throws FirebaseMessagingException {
+        final PushNotification pushNotification= reviewService.postReviewLike(reviewId);
+        notificationService.sendNotification(NotificationType.REVIEW_GOOD, pushNotification);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_REVIEW_LIKE_SUCCESS));
     }
 
@@ -72,7 +78,8 @@ public class ReviewController {
     @ApiOperation(value = "리뷰 좋아요 삭제")
     @DeleteMapping("/reviews/{reviewId}/like")
     public ResponseEntity<ResultResponse> deleteReviewLike(@PathVariable("reviewId") Long reviewId) {
-        reviewService.deleteReviewLike(reviewId);
+        final Long objectId= reviewService.deleteReviewLike(reviewId);
+        notificationService.deleteNotification(NotificationType.REVIEW_GOOD, objectId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.DELETE_REVIEW_LIKE_SUCCESS));
     }
 

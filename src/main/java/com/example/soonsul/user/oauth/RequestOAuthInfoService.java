@@ -20,7 +20,7 @@ public class RequestOAuthInfoService {
         );
     }
 
-    public OAuthInfoResponse request(OAuthLoginParams params) {
+    public OAuthInfoResponse request(OAuthLoginParams params) throws Exception {
         OAuthApiClient client = clients.get(params.oAuthProvider());
         String accessToken = client.requestAccessToken(params);
         return client.requestOauthInfo(accessToken);

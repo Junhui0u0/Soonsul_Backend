@@ -41,8 +41,15 @@ public class EvaluationNumber {
     private Integer density;
 
 
-    public void addAverageRating(Integer number){
-        this.averageRating+= number;
+    public void addAverageRating(CalculationType cType){
+        switch (cType){
+            case ADD:
+                this.averageRating++;
+                break;
+            case SUB:
+                this.averageRating--;
+                break;
+        }
     }
 
 

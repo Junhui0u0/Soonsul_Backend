@@ -35,4 +35,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                     " AND c.comment_id <> :upperCommentId" +
                     " ORDER BY c.comment_id DESC")
     Page<Comment> findByUpperComment(Pageable pageable, @Param("upperCommentId") Long upperCommentId);
+
+    List<Comment> findAllByUpperCommentId(Long upperCommentId);
 }

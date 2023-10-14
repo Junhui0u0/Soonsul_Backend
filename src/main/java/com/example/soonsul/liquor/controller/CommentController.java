@@ -5,8 +5,12 @@ import com.example.soonsul.liquor.dto.CommentRequest;
 import com.example.soonsul.liquor.dto.ReCommentDto;
 import com.example.soonsul.liquor.response.ReCommentListResponse;
 import com.example.soonsul.liquor.service.CommentService;
+import com.example.soonsul.notification.NotificationService;
+import com.example.soonsul.notification.dto.PushNotification;
+import com.example.soonsul.notification.entity.NotificationType;
 import com.example.soonsul.response.result.ResultCode;
 import com.example.soonsul.response.result.ResultResponse;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +28,14 @@ import java.util.List;
 @RequestMapping("/liquors")
 public class CommentController {
     private final CommentService commentService;
+    private final NotificationService notificationService;
+
 
     @ApiOperation(value = "댓글 작성")
     @PostMapping("/reviews/{reviewId}/comment")
-    public ResponseEntity<ResultResponse> postComment(@PathVariable("reviewId") Long reviewId, @RequestBody CommentRequest request) {
-        commentService.postComment(reviewId, request);
+    public ResponseEntity<ResultResponse> postComment(@PathVariable("reviewId") Long reviewId, @RequestBody CommentRequest request) throws FirebaseMessagingException {
+        final PushNotification pushNotification= commentService.postComment(reviewId, request);
+        notificationService.sendNotification(NotificationType.COMMENT, pushNotification);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_COMMENT_SUCCESS));
     }
 
@@ -44,6 +51,7 @@ public class CommentController {
     @ApiOperation(value = "댓글 삭제")
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<ResultResponse> deleteComment(@PathVariable("commentId") Long commentId) {
+        notificationService.deleteNotification(NotificationType.COMMENT, commentId);
         commentService.deleteComment(commentId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.DELETE_COMMENT_SUCCESS));
     }
@@ -51,8 +59,9 @@ public class CommentController {
 
     @ApiOperation(value = "대댓글 작성")
     @PostMapping("/re-comments/{upperCommentId}")
-    public ResponseEntity<ResultResponse> postReComment(@PathVariable("upperCommentId") Long upperCommentId, @RequestBody CommentRequest request) {
-        commentService.postReComment(upperCommentId, request);
+    public ResponseEntity<ResultResponse> postReComment(@PathVariable("upperCommentId") Long upperCommentId, @RequestBody CommentRequest request) throws FirebaseMessagingException {
+        final PushNotification pushNotification= commentService.postReComment(upperCommentId, request);
+        notificationService.sendNotification(NotificationType.RECOMMENT, pushNotification);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_RECOMMENT_SUCCESS));
     }
 
@@ -69,6 +78,7 @@ public class CommentController {
     @DeleteMapping("/re-comments/{commentId}")
     public ResponseEntity<ResultResponse> deleteReComment(@PathVariable("commentId") Long commentId) {
         commentService.deleteReComment(commentId);
+        notificationService.deleteNotification(NotificationType.RECOMMENT, commentId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.DELETE_RECOMMENT_SUCCESS));
     }
 

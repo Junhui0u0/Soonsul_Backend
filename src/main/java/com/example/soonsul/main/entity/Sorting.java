@@ -5,11 +5,13 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum Sort {
+public enum Sorting {
     STAR("star"),
     REVIEW("review"),
     LOWEST_COST("lowest-cost"),
-    HIGHEST_COST("highest-cost");
+    HIGHEST_COST("highest-cost"),
+    DATE("date");
 
     private final String value;
+
 }

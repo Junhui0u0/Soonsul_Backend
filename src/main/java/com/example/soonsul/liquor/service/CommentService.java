@@ -7,6 +7,7 @@ import com.example.soonsul.liquor.entity.Comment;
 import com.example.soonsul.liquor.entity.CommentGood;
 import com.example.soonsul.liquor.entity.Review;
 import com.example.soonsul.liquor.repository.*;
+import com.example.soonsul.notification.dto.PushNotification;
 import com.example.soonsul.user.entity.User;
 import com.example.soonsul.util.LiquorUtil;
 import com.example.soonsul.util.UserUtil;
@@ -66,6 +67,7 @@ public class CommentService {
                     .createdDate(dateConversion(c.getCreatedDate()))
                     .good(commentGoodRepository.countByComment(c))
                     .reCommentList(reCommentList)
+                    .reCommentNumber(commentRepository.findAllByUpperCommentId(c.getCommentId()).size()-1)
                     .flagMySelf(Objects.equals(c.getUser().getUserId(), user.getUserId()))
                     .flagGood(commentGoodRepository.existsByCommentAndUser(c, user))
                     .build();
@@ -103,7 +105,7 @@ public class CommentService {
 
 
     @Transactional
-    public void postComment(Long reviewId, CommentRequest request){
+    public PushNotification postComment(Long reviewId, CommentRequest request){
         final User user= userUtil.getUserByAuthentication();
         final Review review= liquorUtil.getReview(reviewId);
 
@@ -116,6 +118,11 @@ public class CommentService {
                 .build();
         final Comment savedComment= commentRepository.save(comment);
         savedComment.updateUpperCommentId(savedComment.getCommentId());
+
+        return PushNotification.builder()
+                .objectId(savedComment.getCommentId())
+                .receiveUser(review.getUser())
+                .build();
     }
 
 
@@ -136,7 +143,7 @@ public class CommentService {
 
 
     @Transactional
-    public void postReComment(Long upperCommentId, CommentRequest request){
+    public PushNotification postReComment(Long upperCommentId, CommentRequest request){
         final User user= userUtil.getUserByAuthentication();
         final Comment upperComment= liquorUtil.getComment(upperCommentId);
 
@@ -147,13 +154,17 @@ public class CommentService {
                 .review(upperComment.getReview())
                 .upperCommentId(upperComment.getCommentId())
                 .build();
-        commentRepository.save(comment);
+
+        return PushNotification.builder()
+                .objectId(commentRepository.save(comment).getCommentId())
+                .receiveUser(upperComment.getUser())
+                .build();
     }
 
 
     @Transactional
     public void deleteReComment(Long commentId){
-        commentRepository.findById(commentId);
+        commentRepository.deleteById(commentId);
     }
 
 

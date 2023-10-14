@@ -23,7 +23,7 @@ public class PromotionController {
     @ApiOperation(value = "모든 프로모션 조회")
     @GetMapping()
     public ResponseEntity<PromotionListResponse> getPromotionList() {
-        final List<PromotionDto> data= promotionService.getPromotionList();
+        final List<PromotionDto> data= promotionService.getPromotionList("promotion");
         return ResponseEntity.ok(PromotionListResponse.of(ResultCode.GET_PROMOTION_LIST_SUCCESS, data));
     }
 

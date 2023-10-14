@@ -20,6 +20,10 @@ public interface LiquorRepository extends JpaRepository<Liquor, String> {
     List<String> findAllName();
 
     @Query(nativeQuery = true,
+            value="SELECT l.liquor_id FROM liquor l")
+    List<String> findAllId();
+
+    @Query(nativeQuery = true,
             value="SELECT * FROM liquor l WHERE l.name like %:name% order by l.name")
     List<Liquor> findSearch(@Param("name") String name);
 

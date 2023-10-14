@@ -4,6 +4,8 @@ import com.example.soonsul.user.oauth.OAuthProvider;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -48,6 +50,29 @@ public class User {
     @Enumerated(EnumType.STRING)
     private OAuthProvider oAuthProvider;
 
+    @Column(name = "birthday", nullable = false)
+    private LocalDate birthday;
+
+    @Column(name = "period")
+    private String period;
+
+    @Column(name = "liquor")
+    private String liquor;
+
+    @Column(name = "place")
+    private String place;
+
+    @Column(name = "device_token")
+    private String deviceToken;
+
+    @Column(name = "flag_activity")
+    private boolean flagActivity;
+
+    @Column(name = "flag_advertising")
+    private boolean flagAdvertising;
+
+    @Column(name = "created_date")
+    private LocalDateTime createdDate;
 
     public void updateNickname(String nickname){
         this.nickname= nickname;
@@ -55,5 +80,21 @@ public class User {
 
     public void updateProfileImage(String profileImage){
         this.profileImage= profileImage;
+    }
+
+    public void updateFlagWithdrawal(boolean flagWithdrawal){
+        this.flagWithdrawal= flagWithdrawal;
+    }
+
+    public void updateDeviceToken(String deviceToken){
+        this.deviceToken= deviceToken;
+    }
+
+    public void updateFlagActivity(boolean flagActivity){
+        this.flagActivity= flagActivity;
+    }
+
+    public void updateFlagAdvertising(boolean flagAdvertising){
+        this.flagAdvertising= flagAdvertising;
     }
 }

@@ -5,6 +5,7 @@ import com.example.soonsul.liquor.entity.Liquor;
 import com.example.soonsul.liquor.entity.Review;
 import com.example.soonsul.liquor.entity.ReviewGood;
 import com.example.soonsul.liquor.repository.*;
+import com.example.soonsul.notification.dto.PushNotification;
 import com.example.soonsul.user.entity.PersonalEvaluation;
 import com.example.soonsul.user.entity.User;
 import com.example.soonsul.util.LiquorUtil;
@@ -35,6 +36,7 @@ public class ReviewService {
         final User user= userUtil.getUserByAuthentication();
         final Liquor liquor= liquorUtil.getLiquor(liquorId);
         final List<Review> reviews= reviewRepository.findAllByLatest(pageable, liquorId).toList();
+        final Integer totalReviewNumber= reviewRepository.countByLiquor(liquor);
 
         final List<ReviewDto> result= new ArrayList<>();
         for(Review r: reviews){
@@ -52,6 +54,7 @@ public class ReviewService {
                     .profileImage(r.getUser().getProfileImage())
                     .reviewNumber(reviewRepository.countByUser(r.getUser()))
                     .flagGood(reviewGoodRepository.existsByReviewAndUser(r, user))
+                    .totalReviewNumber(totalReviewNumber)
                     .build();
             result.add(reviewDto);
         }
@@ -64,6 +67,7 @@ public class ReviewService {
         final User user= userUtil.getUserByAuthentication();
         final Liquor liquor= liquorUtil.getLiquor(liquorId);
         final List<Review> reviews= reviewRepository.findAllByRating(pageable, liquorId).toList();
+        final Integer totalReviewNumber= reviewRepository.countByLiquor(liquor);
 
         final List<ReviewDto> result= new ArrayList<>();
         for(Review r: reviews){
@@ -81,6 +85,7 @@ public class ReviewService {
                     .profileImage(r.getUser().getProfileImage())
                     .reviewNumber(reviewRepository.countByUser(r.getUser()))
                     .flagGood(reviewGoodRepository.existsByReviewAndUser(r, user))
+                    .totalReviewNumber(totalReviewNumber)
                     .build();
             result.add(reviewDto);
         }
@@ -111,7 +116,7 @@ public class ReviewService {
 
 
     @Transactional
-    public void postReviewLike(Long reviewId){
+    public PushNotification postReviewLike(Long reviewId){
         final User user= userUtil.getUserByAuthentication();
         final Review review= liquorUtil.getReview(reviewId);
 
@@ -119,16 +124,22 @@ public class ReviewService {
                 .review(review)
                 .user(user)
                 .build();
-        reviewGoodRepository.save(good);
+
+        return PushNotification.builder()
+                .objectId(reviewGoodRepository.save(good).getReviewGoodId())
+                .receiveUser(review.getUser())
+                .build();
     }
 
 
     @Transactional
-    public void deleteReviewLike(Long reviewId){
+    public Long deleteReviewLike(Long reviewId){
         final User user= userUtil.getUserByAuthentication();
         final Review review= liquorUtil.getReview(reviewId);
+        final Long objectId= reviewGoodRepository.findByReviewAndUser(review, user).get().getReviewGoodId();
 
         reviewGoodRepository.deleteByReviewAndUser(review, user);
+        return objectId;
     }
 
 

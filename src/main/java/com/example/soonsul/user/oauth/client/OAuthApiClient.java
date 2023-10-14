@@ -7,6 +7,6 @@ import com.example.soonsul.user.oauth.response.OAuthInfoResponse;
 
 public interface OAuthApiClient {
     OAuthProvider oAuthProvider();
-    String requestAccessToken(OAuthLoginParams params);
+    String requestAccessToken(OAuthLoginParams params) throws Exception;
     OAuthInfoResponse requestOauthInfo(String accessToken);
 }

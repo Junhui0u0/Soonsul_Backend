@@ -19,4 +19,10 @@ public class WeekLiquorDto {
 
     @ApiModelProperty(value = "전통주 대표 사진", position = 2)
     private String imageUrl;
+
+    @ApiModelProperty(value = "전통주 이름", position = 3)
+    private String name;
+
+    @ApiModelProperty(value = "평균 평점", position = 4)
+    private Double averageRating;
 }

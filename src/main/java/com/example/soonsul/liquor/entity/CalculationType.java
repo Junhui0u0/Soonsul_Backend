@@ -7,8 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum CalculationType {
     ADD("add"),
-    SUB("sub"),
-    SUB_AND_ADD("sub_and_add");
+    SUB("sub");
 
     private final String value;
 }

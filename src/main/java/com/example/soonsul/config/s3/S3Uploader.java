@@ -90,4 +90,21 @@ public class S3Uploader {
         return uploadImageUrl;
     }
 
+
+    public String promotionUpload(MultipartFile multipartFile, String category){
+        try{
+            File uploadFile = convert(multipartFile)
+                    .orElseThrow(() -> new UploadFileNotExist("upload file not exist", ErrorCode.UPLOAD_FILE_NOT_EXIST));
+            return promotionUpload(uploadFile, category);
+        }catch (Exception e){
+            throw new FileUpload("file upload error", ErrorCode.FILE_UPLOAD_ERROR);
+        }
+    }
+
+    private String promotionUpload(File uploadFile, String category) {
+        String fileName = "promotion/" + category + "/" + uploadFile.getName();
+        String uploadImageUrl = putS3(uploadFile, fileName);
+        removeNewFile(uploadFile);
+        return uploadImageUrl;
+    }
 }

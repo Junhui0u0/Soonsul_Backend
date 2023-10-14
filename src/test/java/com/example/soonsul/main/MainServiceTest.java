@@ -5,7 +5,7 @@ import com.example.soonsul.liquor.entity.RegionClick;
 import com.example.soonsul.liquor.repository.*;
 import com.example.soonsul.main.dto.RegionLiquorDto;
 import com.example.soonsul.main.dto.WeekLiquorDto;
-import com.example.soonsul.main.entity.Sort;
+import com.example.soonsul.main.entity.Sorting;
 import com.example.soonsul.user.entity.User;
 import com.example.soonsul.util.LiquorUtil;
 import com.example.soonsul.util.UserUtil;
@@ -68,8 +68,8 @@ public class MainServiceTest {
         final List<WeekLiquorDto> result= mainService.getWeekLiquor();
 
         //then
-        assertEquals(result.get(0).getLiquorId(), "L008");
-        assertEquals(result.get(1).getLiquorId(), "L013");
+        assertEquals(result.get(0).getLiquorId(), "L013");
+        assertEquals(result.get(1).getLiquorId(), "L008");
         assertEquals(result.get(9).getLiquorId(), "L003");
     }
 
@@ -123,7 +123,7 @@ public class MainServiceTest {
             doReturn(clickList).when(regionClickRepository).findAll();
 
             //when
-            final List<RegionLiquorDto> result= mainService.getRegionLiquor("Around-me", Sort.STAR, myLat, myLon);
+            final List<RegionLiquorDto> result= mainService.getRegionLiquor("Around-me", Sorting.STAR, myLat, myLon);
 
             //then
             assertEquals(result.size(), 8);
@@ -160,7 +160,7 @@ public class MainServiceTest {
             }
 
             //when
-            final List<RegionLiquorDto> result= mainService.getRegionLiquor("Jeolla-do", Sort.LOWEST_COST, null, null);
+            final List<RegionLiquorDto> result= mainService.getRegionLiquor("Jeolla-do", Sorting.LOWEST_COST, null, null);
 
             //then
             assertEquals(result.size(), 10);
@@ -264,7 +264,7 @@ public class MainServiceTest {
             //given
 
             //when
-            final List<RegionLiquorDto> result= mainService.sortByCategory(Sort.STAR, list);
+            final List<RegionLiquorDto> result= mainService.sortByCategory(Sorting.STAR, list);
 
             //then
             assertEquals(result.get(0).getLiquorId(), "L003");
@@ -278,7 +278,7 @@ public class MainServiceTest {
 
 
             //when
-            final List<RegionLiquorDto> result= mainService.sortByCategory(Sort.REVIEW, list);
+            final List<RegionLiquorDto> result= mainService.sortByCategory(Sorting.REVIEW, list);
 
             //then
             assertEquals(result.get(0).getLiquorId(), "L004");
@@ -292,7 +292,7 @@ public class MainServiceTest {
 
 
             //when
-            final List<RegionLiquorDto> result= mainService.sortByCategory(Sort.LOWEST_COST, list);
+            final List<RegionLiquorDto> result= mainService.sortByCategory(Sorting.LOWEST_COST, list);
 
             //then
             assertEquals(result.get(0).getLiquorId(), "L004");
@@ -306,7 +306,7 @@ public class MainServiceTest {
 
 
             //when
-            final List<RegionLiquorDto> result= mainService.sortByCategory(Sort.HIGHEST_COST, list);
+            final List<RegionLiquorDto> result= mainService.sortByCategory(Sorting.HIGHEST_COST, list);
 
             //then
             assertEquals(result.get(0).getLiquorId(), "L006");
@@ -320,7 +320,10 @@ public class MainServiceTest {
     private List<Liquor> liquorList(){
         final List<Liquor> list= new ArrayList<>();
         for(int i=1;i<=15;i++){
-            list.add(liquor("L"+String.format("%03d", i), 0.0,0L));
+            final Liquor liquor= liquor("L"+String.format("%03d", i), 0.0,0L);
+            list.add(liquor);
+            if(i==1||i==2||i==6||i==9||i==10) continue;
+            doReturn(liquor).when(liquorUtil).getLiquor(liquor.getLiquorId());
         }
         return list;
     }

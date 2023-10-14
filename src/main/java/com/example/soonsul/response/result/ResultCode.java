@@ -12,6 +12,12 @@ public enum ResultCode {
     SIGNUP_SUCCESS(201,"A003","회원가입 완료했습니다."),
     GENERATE_ACCESS_TOKEN_SUCCESS(200,"A004","새로운 Access Token을 발급했습니다."),
     TOKEN_VALID_CHECK_SUCCESS(200,"A005","Access Token 유효성 검사 완료했습니다."),
+    DELETE_USER_SUCCESS(200,"A006","회원탈퇴 완료했습니다."),
+    POST_FOLLOWING_SUCCESS(201,"A007","팔로잉을 추가했습니다."),
+    DELETE_FOLLOWING_SUCCESS(200,"A008","팔로잉을 삭제했습니다."),
+    GET_FOLLOWING_SUCCESS(200,"A009","팔로잉 리스트를 조회했습니다."),
+    GET_FOLLOWER_SUCCESS(200,"A010","팔로워 리스트를 조회했습니다."),
+    POST_DEVICE_TOKEN_SUCCESS(200,"A011","디바이스 토큰을 등록했습니다."),
 
     //scan
     GET_SCANNED_LIQUOR_NAME_SUCCESS(200,"SC01","스캔한 제품의 주류명을 조회했습니다."),
@@ -51,6 +57,8 @@ public enum ResultCode {
     POST_SCRAP_SUCCESS(201,"L030","스크랩을 등록했습니다."),
     DELETE_SCRAP_SUCCESS(200,"L031","스크랩을 삭제했습니다."),
     GET_RECOMMENT_LIST_SUCCESS(200,"L032","대댓글을 모두 조회했습니다."),
+    GET_EVALUATION_SUCCESS(200,"L033","유저가 남긴 평가 내용을 모두 조회했습니다."),
+    GET_LIQUOR_LIST_ID_SUCCESS(200,"L034","모든 전통주 ID를 조회했습니다"),
 
     //user
     PUT_PROFILE_SUCCESS(200,"U001","유저 프로필을 수정했습니다."),
@@ -60,6 +68,12 @@ public enum ResultCode {
     GET_USER_SCRAP_SUCCESS(200,"U005","유저가 스크랩한 전통주 리스트를 조회했습니다."),
     GET_USER_EVALUATION_SUCCESS(200,"U006","유저가 남긴 평가리스트를 조회했습니다."),
     DELETE_USER_EVALUATION_SUCCESS(200,"U007","유저가 남긴 평가를 삭제했습니다."),
+    PUT_PROFILE_NICKNAME_SUCCESS(200,"U008","유저 닉네임을 수정했습니다."),
+    PUT_PROFILE_IMAGE_SUCCESS(200,"U009","유저 프로필 이미지를 수정했습니다."),
+    GET_USER_PROFILE_SUCCESS(200, "U010", "유저 프로필 정보를 조회했습니다."),
+    POST_INQUIRY_SUCCESS(201, "U011", "문의글을 작성했습니다."),
+    GET_FLAG_NOTIFICATION_SUCCESS(200, "U012", "알림 허용 유무를 조회했습니다."),
+    PUT_FLAG_NOTIFICATION_SUCCESS(200, "U013", "알림 허용 유무를 수정했습니다."),
 
     //click
     POST_CLICK_SUCCESS(201,"C001","전통주 클릭을 등록했습니다."),
@@ -72,12 +86,21 @@ public enum ResultCode {
     GET_PROMOTION_SUCCESS(200,"P002","해당 프로모션을 조회했습니다."),
     POST_ZZIM_SUCCESS(201,"P003","찜을 등록했습니다."),
     DELETE_ZZIM_SUCCESS(200,"P004","해당 찜을 삭제했습니다."),
-
+    GET_MAIN_BANNER_LIST_SUCCESS(200,"P005","메인 배너 리스트를 조회했습니다."),
+    GET_MAIN_BANNER_SUCCESS(200,"P006","해당 메인 배너를 조회했습니다."),
+    POST_BANNER_ZZIM_SUCCESS(201,"P007","메인 배너 찜을 등록했습니다."),
+    DELETE_BANNER_ZZIM_SUCCESS(200,"P008","메인 배너 찜을 삭제했습니다."),
+    
+    //notification
+    GET_NOTIFICATION_LIST_SUCCESS(200,"N001","모든 알림 내역을 조회했습니다."),
+    GET_NEW_NOTIFICATION_SUCCESS(200,"N002","새로운 알림 유무를 확인했습니다."),
+    PUT_NEW_NOTIFICATION_SUCCESS(200,"N003","알림 상태를 읽음으로 수정했습니다."),
 
     //manager
     POST_MAIN_PHOTO(200,"M001","S3에 모든 전통주 메인사진을 등록했습니다."),
     POST_LIQUOR_INIT_SUCCESS(201,"M002","모든 전통주 평가, 평가수를 등록했습니다."),
-    POST_LOCATION_INIT_SUCCESS(200,"M003","모든 소재지의 위도, 경도값을 등록했습니다.")
+    POST_LOCATION_INIT_SUCCESS(200,"M003","모든 소재지의 위도, 경도값을 등록했습니다."),
+    MANAGE_ACTION_SUCCESS(200,"M004","성공했습니다.")
     ;
 
 
