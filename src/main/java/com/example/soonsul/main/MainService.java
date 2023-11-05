@@ -138,13 +138,13 @@ public class MainService {
         final HashMap<String, Pair<Integer, Double>> map = new HashMap<>();
 
         for(RegionClick r: clickList){
-            if(map.get(r.getLiquorId())!=null && map.get(r.getLiquorId()).getSecond() == -1.0) continue;
+            if(map.containsKey(r.getLiquorId()) && map.get(r.getLiquorId()).getSecond() == -1.0) continue;
 
             Double distance;
             if(latitude==null && longitude==null) distance= 0.0;
             else distance= distanceDifference(latitude, longitude, r.getLatitude(), r.getLongitude());
 
-            if(map.get(r.getLiquorId()) == null)
+            if(!map.containsKey(r.getLiquorId()))
                 map.put(r.getLiquorId(), Pair.of(1, distance));
             else
                 map.put(r.getLiquorId(), Pair.of(map.get(r.getLiquorId()).getFirst()+1, map.get(r.getLiquorId()).getSecond()));
@@ -164,7 +164,7 @@ public class MainService {
                     .alcohol(liquor.getAlcohol())
                     .capacity(liquor.getCapacity())
                     .liquorCategory(liquorUtil.getCodeName(liquor.getLiquorCategory()))
-                    .locationList(liquorUtil.getBreweryList(liquorId))
+                    .brewery(liquor.getBrewery())
                     .lowestPrice(liquor.getLowestPrice())
                     .flagScrap(scrapRepository.existsByUserAndLiquor(user, liquor))
                     .ratingNumber(reviewRepository.countByLiquor(liquor))
@@ -191,7 +191,7 @@ public class MainService {
         double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
                 Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon/2) * Math.sin(deltaLon/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double distance = R * c;
+        double distance = R * c * 1000;
 
         if(distance<=10000) return distance;
         else return -1.0;

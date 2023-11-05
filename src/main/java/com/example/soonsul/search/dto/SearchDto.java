@@ -27,8 +27,8 @@ public class SearchDto {
     @ApiModelProperty(value = "주종 카테고리", position = 3)
     private String liquorCategory;
 
-    @ApiModelProperty(value = "양조장 리스트", position = 4)
-    private List<String> locationList;
+    @ApiModelProperty(value = "양조장", position = 4)
+    private String brewery;
 
     @ApiModelProperty(value = "전통주 대표 사진", position = 5)
     private String imageUrl;

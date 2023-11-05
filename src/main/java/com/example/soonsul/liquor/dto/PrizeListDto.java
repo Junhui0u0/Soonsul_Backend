@@ -14,9 +14,6 @@ import lombok.NoArgsConstructor;
 @ApiModel(description = "전통주 - 수상내역 정보")
 public class PrizeListDto {
 
-    @ApiModelProperty(value = "상 pk")
-    private Long prizeId;
-
     @ApiModelProperty(value = "상 이름")
     private String name;
 

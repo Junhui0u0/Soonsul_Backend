@@ -37,8 +37,8 @@ public class ScanDto {
     @ApiModelProperty(value = "주종 카테고리", position = 6)
     private String liquorCategory;
 
-    @ApiModelProperty(value = "양조장 리스트", position = 7)
-    private List<String> locationList;
+    @ApiModelProperty(value = "양조장", position = 7)
+    private String brewery;
 
     @ApiModelProperty(value = "전통주 평점", position = 8)
     private Double averageRating;

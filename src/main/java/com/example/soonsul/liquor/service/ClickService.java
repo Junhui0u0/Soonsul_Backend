@@ -22,7 +22,6 @@ public class ClickService {
     private final ClickRepository clickRepository;
     private final UserUtil userUtil;
     private final LiquorUtil liquorUtil;
-    private final LocationRepository locationRepository;
     private final RegionClickRepository regionClickRepository;
     private final FilteringClickRepository filteringClickRepository;
 
@@ -46,21 +45,11 @@ public class ClickService {
     @Transactional
     public void postRegionClick(String liquorId){
         final Liquor liquor= liquorUtil.getLiquor(liquorId);
-        final List<Location> list= locationRepository.findAllByLiquor(liquor);
-
-        Double latitude= 0.0;
-        Double longitude= 0.0;
-        if(list.size()>0){
-            final LocationInfo info= liquorUtil.getLocationInfo(list.get(0).getLocationInfoId());
-            latitude= info.getLatitude();
-            longitude= info.getLongitude();
-        }
-
         final RegionClick regionClick= RegionClick.builder()
                 .region(liquor.getRegion())
                 .liquorId(liquorId)
-                .latitude(latitude)
-                .longitude(longitude)
+                .latitude(liquor.getLatitude())
+                .longitude(liquor.getLongitude())
                 .build();
         regionClickRepository.save(regionClick);
     }

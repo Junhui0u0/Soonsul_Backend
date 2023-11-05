@@ -46,6 +46,28 @@ public class Liquor {
     @Column(name = "liquor_category")
     private String liquorCategory;
 
+    @Column(name = "brewery")
+    private String brewery;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "sale_place")
+    private String salePlace;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "site_url")
+    private String siteUrl;
+
+
 
     public void updateAverageRating(Double averageRating){
         this.averageRating= averageRating;
@@ -53,6 +75,26 @@ public class Liquor {
 
     public void updateImageUrl(String imageUrl){
         this.imageUrl= imageUrl;
+    }
+
+    public void updateLiquor(String name, String ingredient, Long lowestPrice, String region,
+                             Double alcohol, Integer capacity, String imageUrl, String liquorCategory, String location, String brewery,
+                             String salePlace, String phoneNumber, String siteUrl, Double latitude, Double longitude){
+        this.name= name;
+        this.ingredient= ingredient;
+        this.lowestPrice= lowestPrice;
+        this.region= region;
+        this.alcohol= alcohol;
+        this.capacity= capacity;
+        //this.imageUrl= imageUrl;
+        this.liquorCategory= liquorCategory;
+        this.location= location;
+        this.brewery= brewery;
+        this.salePlace= salePlace;
+        this.phoneNumber= phoneNumber;
+        this.siteUrl= siteUrl;
+        this.latitude= latitude;
+        this.longitude= longitude;
     }
 
 }

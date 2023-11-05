@@ -2,8 +2,6 @@ package com.example.soonsul.liquor.service;
 
 import com.example.soonsul.liquor.dto.PersonalDto;
 import com.example.soonsul.liquor.entity.Liquor;
-import com.example.soonsul.liquor.entity.Location;
-import com.example.soonsul.liquor.entity.LocationInfo;
 import com.example.soonsul.liquor.entity.Review;
 import com.example.soonsul.liquor.repository.*;
 import com.example.soonsul.user.entity.PersonalEvaluation;
@@ -26,7 +24,6 @@ public class PersonalService {
     private final PersonalEvaluationRepository personalEvaluationRepository;
     private final UserUtil userUtil;
     private final LiquorUtil liquorUtil;
-    private final LocationRepository locationRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewGoodRepository reviewGoodRepository;
     private final CommentRepository commentRepository;
@@ -45,14 +42,6 @@ public class PersonalService {
         for(PersonalEvaluation p: list){
             final Liquor liquor= p.getLiquor();
             final String liquorCategory= liquorUtil.getCodeName(liquor.getLiquorCategory());
-
-            final List<Location> locations = locationRepository.findAllByLiquor(liquor);
-            final List<String> locationList = new ArrayList<>();
-            for (Location l : locations) {
-                final LocationInfo info = liquorUtil.getLocationInfo(l.getLocationInfoId());
-                locationList.add(info.getBrewery());
-            }
-
             final Optional<Review> review= reviewRepository.findByUserAndLiquor(user, liquor);
 
             final PersonalDto dto= PersonalDto.builder()
@@ -61,7 +50,7 @@ public class PersonalService {
                     .averageRating(liquor.getAverageRating())
                     .imageUrl(liquor.getImageUrl())
                     .liquorCategory(liquorCategory)
-                    .locationList(locationList)
+                    .brewery(liquor.getBrewery())
                     .evaluationDate(p.getEvaluationDate())
                     .personalEvaluationId(p.getPersonalEvaluationId())
                     .personalRating(p.getLiquorPersonalRating())
@@ -76,7 +65,7 @@ public class PersonalService {
                     .totalReviewNumber(totalReviewNumber)
                     .goodNumber(review.map(reviewGoodRepository::countByReview).orElse(0))
                     .commentNumber(review.map(commentRepository::countByReview).orElse(0))
-                    .salePlaceList(liquorUtil.getSalePlaceList(liquor.getLiquorId()))
+                    .salePlace(liquor.getSalePlace())
                     .flagGood(review.isPresent() && reviewGoodRepository.existsByReviewAndUser(review.get(), userUtil.getUserByAuthentication()))
                     .build();
             result.add(dto);

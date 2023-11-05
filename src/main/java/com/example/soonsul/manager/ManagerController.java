@@ -1,11 +1,14 @@
 package com.example.soonsul.manager;
 
+import com.example.soonsul.liquor.dto.ReviewDto;
+import com.example.soonsul.liquor.response.ReviewListResponse;
 import com.example.soonsul.response.result.ResultCode;
 import com.example.soonsul.response.result.ResultResponse;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.util.Pair;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,14 +51,6 @@ public class ManagerController {
     }
 
 
-    @ApiOperation(value = "모든 소재지에 위도,경도값 추가", notes = "소재지 데이터 넣은 후  해당 api 실행하기")
-    @PostMapping("/location/init")
-    public ResponseEntity<ResultResponse> postLocationInit() {
-        managerService.postLocationInit();
-        return ResponseEntity.ok(ResultResponse.of(ResultCode.POST_LOCATION_INIT_SUCCESS));
-    }
-
-
     @ApiOperation(value = "전통주 저장")
     @PostMapping("/liquors")
     public ResponseEntity<ResultResponse> postLiquor(String spreadsheetId, String range) throws IOException {
@@ -64,10 +59,10 @@ public class ManagerController {
     }
 
 
-    @ApiOperation(value = "소재지 주소 체크", notes = "소재지가 잘못 저장된 전통주를 리스트로 반환")
-    @GetMapping("/location/check")
-    public ResponseEntity<ResultResponse> getLocationCheck(String spreadsheetId, String range) throws IOException {
-        List<String> data= googleSheetsService.getLocationCheck(spreadsheetId, range);
+    @ApiOperation(value = "전통주 저장하기 전에 데이터가 올바른 형식인지 체크", notes = "양조장 주소나 행정구역 이름이 잘못 저장되어 있는 전통주를 리스트로 반환")
+    @GetMapping("/data-check")
+    public ResponseEntity<ResultResponse> checkDataFormat(String spreadsheetId, @RequestParam List<String> range) throws IOException {
+        List<Pair<String,String>> data= googleSheetsService.checkDataFormat(spreadsheetId, range);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS, data));
     }
 
@@ -99,5 +94,13 @@ public class ManagerController {
     public ResponseEntity<ResultResponse> deletePromotion(@PathVariable("promotionId") Long promotionId) {
         managerService.deletePromotion(promotionId);
         return ResponseEntity.ok(ResultResponse.of(ResultCode.MANAGE_ACTION_SUCCESS));
+    }
+
+
+    @ApiOperation(value = "모든 리뷰 조회")
+    @GetMapping("/reviews")
+    public ResponseEntity<ReviewListResponse> getAllReview() {
+        final List<ReviewDto> data= managerService.getAllReview();
+        return ResponseEntity.ok(ReviewListResponse.of(ResultCode.MANAGE_ACTION_SUCCESS, data));
     }
 }

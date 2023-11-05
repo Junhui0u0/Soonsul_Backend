@@ -12,13 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel(description = "전통주 - 판매처 정보")
-public class SalePlaceListDto {
-
-    @ApiModelProperty(value = "판매처 pk")
-    private Long salePlaceId;
+public class SalePlaceDto {
 
     @ApiModelProperty(value = "판매처 이름")
-    private String name;
+    private String salePlace;
 
     @ApiModelProperty(value = "전화번호")
     private String phoneNumber;

@@ -12,13 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @ApiModel(description = "전통주 - 소재지 정보")
-public class LocationListDto {
+public class LocationDto {
 
-    @ApiModelProperty(value = "소재지 pk")
-    private Long locationInfoId;
-
-    @ApiModelProperty(value = "소재지 이름")
-    private String name;
+    @ApiModelProperty(value = "양조장 이름")
+    private String brewery;
 
     @ApiModelProperty(value = "위도")
    private Double latitude;
@@ -26,7 +23,7 @@ public class LocationListDto {
     @ApiModelProperty(value = "경도")
     private Double longitude;
 
-    @ApiModelProperty(value = "양조장")
-    private String brewery;
+    @ApiModelProperty(value = "양조장 위치")
+    private String location;
 
 }

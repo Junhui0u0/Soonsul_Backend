@@ -1,16 +1,7 @@
 package com.example.soonsul.search;
 
 import com.example.soonsul.liquor.entity.Liquor;
-import com.example.soonsul.liquor.entity.Location;
-import com.example.soonsul.liquor.entity.LocationInfo;
-import com.example.soonsul.liquor.exception.CodeNotExist;
-import com.example.soonsul.liquor.exception.LocationInfoNotExist;
-import com.example.soonsul.liquor.repository.CodeRepository;
 import com.example.soonsul.liquor.repository.LiquorRepository;
-import com.example.soonsul.liquor.repository.LocationInfoRepository;
-import com.example.soonsul.liquor.repository.LocationRepository;
-import com.example.soonsul.main.dto.RegionLiquorDto;
-import com.example.soonsul.response.error.ErrorCode;
 import com.example.soonsul.search.dto.SearchDto;
 import com.example.soonsul.util.LiquorUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +17,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SearchService {
     private final LiquorRepository liquorRepository;
-    private final CodeRepository codeRepository;
-    private final LocationRepository locationRepository;
-    private final LocationInfoRepository locationInfoRepository;
     private final LiquorUtil liquorUtil;
 
 
@@ -39,19 +27,11 @@ public class SearchService {
 
         for(Liquor l: list){
             final String liquorCategory= liquorUtil.getCodeName(l.getLiquorCategory());
-
-            final List<Location> locations = locationRepository.findAllByLiquor(l);
-            final List<String> locationList = new ArrayList<>();
-            for (Location location : locations) {
-                final LocationInfo info = liquorUtil.getLocationInfo(location.getLocationInfoId());
-                locationList.add(info.getBrewery());
-            }
-
             final SearchDto dto= SearchDto.builder()
                     .liquorId(l.getLiquorId())
                     .name(l.getName())
                     .liquorCategory(liquorCategory)
-                    .locationList(locationList)
+                    .brewery(l.getBrewery())
                     .imageUrl(l.getImageUrl())
                     .startIdx(l.getName().indexOf(name))
                     .build();

@@ -34,8 +34,8 @@ public class PersonalDto {
     @ApiModelProperty(value = "주종 카테고리", position = 5)
     private String liquorCategory;
 
-    @ApiModelProperty(value = "양조장 리스트", position = 6)
-    private List<String> locationList;
+    @ApiModelProperty(value = "양조장 이름", position = 6)
+    private String brewery;
 
     @ApiModelProperty(value = "평가한 날짜", position = 7)
     private LocalDate evaluationDate;
@@ -81,7 +81,7 @@ public class PersonalDto {
     private Integer commentNumber;
 
     @ApiModelProperty(value = "판매처", position = 21)
-    private List<String> salePlaceList;
+    private String salePlace;
 
     @ApiModelProperty(value = "좋아요 유무", position = 22)
     private boolean flagGood;

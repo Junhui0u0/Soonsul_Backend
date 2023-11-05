@@ -1,14 +1,9 @@
 package com.example.soonsul.manager;
 
 import com.example.soonsul.config.s3.S3Uploader;
-import com.example.soonsul.liquor.entity.Evaluation;
-import com.example.soonsul.liquor.entity.EvaluationNumber;
-import com.example.soonsul.liquor.entity.Liquor;
-import com.example.soonsul.liquor.entity.LocationInfo;
-import com.example.soonsul.liquor.repository.EvaluationNumberRepository;
-import com.example.soonsul.liquor.repository.EvaluationRepository;
-import com.example.soonsul.liquor.repository.LiquorRepository;
-import com.example.soonsul.liquor.repository.LocationInfoRepository;
+import com.example.soonsul.liquor.dto.ReviewDto;
+import com.example.soonsul.liquor.entity.*;
+import com.example.soonsul.liquor.repository.*;
 import com.example.soonsul.manager.dto.LocationRes;
 import com.example.soonsul.notification.NotificationRepository;
 import com.example.soonsul.notification.NotificationService;
@@ -21,6 +16,8 @@ import com.example.soonsul.response.error.ErrorCode;
 import com.example.soonsul.user.entity.User;
 import com.example.soonsul.user.repository.UserRepository;
 import com.example.soonsul.util.LiquorUtil;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,11 +41,13 @@ public class ManagerService {
     private final LiquorRepository liquorRepository;
     private final EvaluationRepository evaluationRepository;
     private final EvaluationNumberRepository numberRepository;
-    private final LocationInfoRepository locationInfoRepository;
     private final PromotionRepository promotionRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final NotificationRepository notificationRepository;
+    private final PrizeRepository prizeRepository;
+    private final Sheets sheetsService;
+    private final ReviewRepository reviewRepository;
 
     @Value("${map.kakao.apiKey}")
     private String apiKey;
@@ -114,25 +115,6 @@ public class ManagerService {
 
 
     @Transactional
-    public void postLocationInit() {
-        final List<LocationInfo> list = locationInfoRepository.findAll();
-
-        for(LocationInfo info: list){
-            final String url = apiUrl + "?query=" + info.getName();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", apiKey);
-
-            final HttpEntity<String> request = new HttpEntity<>(headers);
-            LocationRes response= restTemplate.exchange(url, HttpMethod.GET, request, LocationRes.class).getBody();
-
-            info.updateLatitude(response.documents[0].latitude);
-            info.updateLongitude(response.documents[0].longitude);
-        }
-    }
-
-
-    @Transactional
     public void postPromotion(MultipartFile image, MultipartFile content, String title,
                               String location, LocalDate beginDate, LocalDate endDate) throws FirebaseMessagingException {
         final Promotion promotion= Promotion.builder()
@@ -165,5 +147,22 @@ public class ManagerService {
         s3Uploader.deleteFile(promotion.getContent());
         promotionRepository.deleteById(promotionId);
         notificationRepository.deleteByTypeAndObjectId(NotificationType.PROMOTION, promotionId);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<ReviewDto> getAllReview() {
+        final List<Review> reviews= reviewRepository.findAll();
+        final List<ReviewDto> result= new ArrayList<>();
+        for(Review r: reviews){
+            final ReviewDto reviewDto= ReviewDto.builder()
+                    .reviewId(r.getReviewId())
+                    .content(r.getContent())
+                    .userId(r.getUser().getUserId())
+                    .nickname(r.getUser().getNickname())
+                    .build();
+            result.add(reviewDto);
+        }
+        return result;
     }
 }

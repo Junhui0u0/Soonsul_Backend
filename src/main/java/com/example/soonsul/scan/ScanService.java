@@ -2,10 +2,7 @@ package com.example.soonsul.scan;
 
 import com.example.soonsul.config.s3.S3Uploader;
 import com.example.soonsul.liquor.entity.Liquor;
-import com.example.soonsul.liquor.entity.Location;
-import com.example.soonsul.liquor.entity.LocationInfo;
 import com.example.soonsul.liquor.repository.LiquorRepository;
-import com.example.soonsul.liquor.repository.LocationRepository;
 import com.example.soonsul.response.error.ErrorCode;
 import com.example.soonsul.scan.dto.ScanDto;
 import com.example.soonsul.scan.exception.ScanNotExist;
@@ -26,8 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.soonsul.response.error.ErrorCode.SCAN_NOT_EXIST;
-
 @Service
 @RequiredArgsConstructor
 public class ScanService {
@@ -36,7 +31,6 @@ public class ScanService {
     private final UserUtil userUtil;
     private final LiquorUtil liquorUtil;
     private final S3Uploader s3Uploader;
-    private final LocationRepository locationRepository;
     private final PersonalEvaluationRepository personalEvaluationRepository;
 
 
@@ -76,13 +70,6 @@ public class ScanService {
 
             final String liquorCategory= liquorUtil.getCodeName(liquor.getLiquorCategory());
 
-            final List<Location> locations = locationRepository.findAllByLiquor(liquor);
-            final List<String> locationList = new ArrayList<>();
-            for (Location l : locations) {
-                final LocationInfo info = liquorUtil.getLocationInfo(l.getLocationInfoId());
-                locationList.add(info.getBrewery());
-            }
-
             boolean flag= true;
             final Optional<PersonalEvaluation> evaluation= personalEvaluationRepository.findByUserAndLiquor(user, liquor);
             if(evaluation.isEmpty()) flag=false;
@@ -94,7 +81,7 @@ public class ScanService {
                     .liquorId(liquor.getLiquorId())
                     .name(liquor.getName())
                     .liquorCategory(liquorCategory)
-                    .locationList(locationList)
+                    .brewery(liquor.getBrewery())
                     .averageRating(liquor.getAverageRating())
                     .flagEvaluation(flag)
                     .personalRating((flag) ? evaluation.get().getLiquorPersonalRating() : null)

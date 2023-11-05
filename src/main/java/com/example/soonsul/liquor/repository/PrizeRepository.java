@@ -11,10 +11,11 @@ import java.util.List;
 
 @Repository
 public interface PrizeRepository extends JpaRepository<Prize, Long> {
-    /*
+
     @Query(nativeQuery = true,
-            value="SELECT p.prize_name FROM prize p WHERE p.liquor_id = :liquorId")
-    List<String> findAllByLiquor(@Param("liquorId") String liquorId);
-     */
+            value="SELECT p.name FROM prize p WHERE p.liquor_id = :liquorId")
+    List<String> findAll(@Param("liquorId") String liquorId);
+
     List<Prize> findAllByLiquor(Liquor liquor);
+    void deleteAllByLiquor(Liquor liquor);
 }
